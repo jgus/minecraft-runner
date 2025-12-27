@@ -1,0 +1,30 @@
+services:
+  minecraft:
+    image: your-username/minecraft-runner:latest
+    container_name: minecraft-server
+    restart: unless-stopped
+    ports:
+      # SSH access
+      - "22:22"
+      # Minecraft server ports
+      - "25565:25565/tcp"
+      - "25565:25565/udp"
+      # Additional Minecraft ports (if needed)
+      - "8123:8123/tcp"
+      - "19132:19132/udp"
+      - "19133:19133/udp"
+    volumes:
+      # Mount SSH keys directory (read-only for security)
+      # See ssh-keys/README.md for setup instructions
+      - ./ssh-keys:/ssh-keys-inject:ro
+      # Persist Minecraft server data
+      - minecraft-data:/home/minecraft/config
+    environment:
+      # UID/GID for minecraft user (default: 1000)
+      # Set these to match your host user for better volume permissions
+      - MINECRAFT_UID=1000
+      - MINECRAFT_GID=1000
+
+volumes:
+  minecraft-data:
+    driver: local

@@ -1,0 +1,3 @@
+# SSH keys (exclude everything except README.md)
+ssh-keys/*
+!ssh-keys/README.md
