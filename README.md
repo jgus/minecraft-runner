@@ -12,7 +12,9 @@ A Docker-based Minecraft server runner with SSH access. SSH keys are injected at
 
 ## Quick Start
 
-### 1. Generate SSH Keys
+### Option A: Using Pre-built Image from GHCR (Recommended)
+
+#### 1. Generate SSH Keys
 
 Create a `ssh-keys` directory and generate the required SSH host keys:
 
@@ -32,30 +34,48 @@ ssh-keygen -t ed25519 -f ssh-keys/ssh_host_ed25519_key -N ""
 cp ~/.ssh/id_rsa.pub ssh-keys/authorized_keys
 ```
 
-### 2. Build the Docker Image
-
-```bash
-docker build -t your-username/minecraft-runner:latest .
-```
-
-### 3. Update docker-compose.yml
-
-Edit [`docker-compose.yml`](docker-compose.yml) and replace `your-username` with your Docker Hub username:
-
-```yaml
-services:
-  minecraft:
-    image: your-username/minecraft-runner:latest
-    # ... rest of configuration
-```
-
-### 4. Start the Server
+#### 2. Start the Server
 
 ```bash
 docker-compose up -d
 ```
 
-### 5. Connect via SSH
+#### 3. Connect via SSH
+
+```bash
+ssh -p 22 minecraft@localhost
+```
+
+### Option B: Building Locally
+
+#### 1. Generate SSH Keys
+
+Same as Option A above.
+
+#### 2. Build the Docker Image
+
+```bash
+docker build -t minecraft-runner:latest .
+```
+
+#### 3. Update docker-compose.yml
+
+Edit [`docker-compose.yml`](docker-compose.yml) to use the local image:
+
+```yaml
+services:
+  minecraft:
+    image: minecraft-runner:latest
+    # ... rest of configuration
+```
+
+#### 4. Start the Server
+
+```bash
+docker-compose up -d
+```
+
+#### 5. Connect via SSH
 
 ```bash
 ssh -p 22 minecraft@localhost
@@ -132,6 +152,57 @@ Example:
 
 ```bash
 docker build --build-arg java_ver=21 -t minecraft-runner .
+```
+
+## GitHub Actions CI/CD
+
+This project includes a GitHub Actions workflow that automatically builds and publishes Docker images to GitHub Container Registry (GHCR) on:
+
+- Push to `main` branch
+- Push of version tags (e.g., `v1.0.0`)
+- Pull requests (build only, no push)
+- Manual workflow dispatch
+
+### Image Tags
+
+The workflow generates the following tags for each Java version:
+
+| Tag | Description |
+|-----|-------------|
+| `main` | Latest build from main branch |
+| `java21` | Latest build with Java 21 |
+| `v1.2.3-java21` | Full version tag with Java 21 |
+| `v1.2-java21` | Major.minor version tag with Java 21 |
+| `v1-java21` | Major version tag with Java 21 |
+| `v1.2.3` | Full version tag (latest Java) |
+| `v1.2` | Major.minor version tag (latest Java) |
+| `v1` | Major version tag (latest Java) |
+| `sha-<commit>` | Git commit SHA |
+
+When building multiple Java versions, you'll get tags like:
+- `v1.2.3-java21`, `v1.2.3-java17`, `v1.2.3-java11`
+- `java21`, `java17`, `java11`
+
+### Adding New Java Versions
+
+To add support for additional Java versions, edit [`.github/workflows/docker-publish.yml`](.github/workflows/docker-publish.yml) and update the matrix:
+
+```yaml
+strategy:
+  matrix:
+    java_version: [21, 17, 11]
+```
+
+This will build images with tags `java21`, `java17`, and `java11`.
+
+### Using GHCR Images
+
+To use the pre-built image from GHCR:
+
+```yaml
+services:
+  minecraft:
+    image: ghcr.io/jgus/minecraft-runner:latest
 ```
 
 ## Docker Compose Commands
