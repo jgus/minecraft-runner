@@ -1,6 +1,6 @@
 services:
   minecraft:
-    image: your-username/minecraft-runner:latest
+    image: ghcr.io/jgus/minecraft-runner:latest
     container_name: minecraft-server
     restart: unless-stopped
     ports:
